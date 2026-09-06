@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authority Dashboard | SafeReach</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+</head>
+<body>
+<header class="topbar authority-bar">
+  <a class="logo" href="index.html">⚡ SafeReach <small>Command Center</small></a>
+  <div class="top-actions">
+    <span class="live-dot">● LIVE SYSTEM</span>
+    <a href="http://localhost:5174" target="_blank" class="switch-link">🚑 Responder View →</a>
+    <a href="citizen.html" class="switch-link">Citizen Portal →</a>
+  </div>
+</header>
+
+<div class="app-layout">
+  <aside class="sidebar authority-side">
+    <button class="nav-item active" data-section="overview">📊 <span>Overview</span></button>
+    <button class="nav-item" data-section="monitor">🗺️ <span>Live Monitoring</span></button>
+    <button class="nav-item" data-section="incidents">🚨 <span>Incidents</span></button>
+    <button class="nav-item" data-section="teams">🚑 <span>Rescue Teams</span></button>
+    <button class="nav-item" data-section="resources">📦 <span>Relief Resources</span></button>
+    <button class="nav-item" data-section="shelterAdmin">🏠 <span>Shelters</span></button>
+    <button class="nav-item" data-section="recovery">♻️ <span>Recovery</span></button>
+  </aside>
+
+  <main class="content">
+    <section id="overview" class="section active">
+      <div class="page-title"><span class="eyebrow">AUTHORITY CONTROL CENTER</span><h1>Emergency Operations Dashboard</h1><p>Monitor incidents, prioritize field operations, and coordinate response.</p></div>
+      <div class="stats-grid authority-stats">
+        <div class="stat-card critical"><span>🚨</span><b id="activeCount">0</b><small>Active Incidents</small></div>
+        <div class="stat-card"><span>🔴</span><b id="criticalCount">0</b><small>Critical Priority</small></div>
+        <div class="stat-card"><span>🚑</span><b id="availableTeams">6</b><small>Available Teams</small></div>
+        <div class="stat-card"><span>📦</span><b>82%</b><small>Relief Stock</small></div>
+      </div>
+      <div class="dashboard-grid">
+        <div class="card"><div class="card-head"><h2>AI Priority Queue</h2><span class="ai-badge">🤖 AI ASSISTED</span></div><div id="priorityQueue"></div></div>
+        <div class="card"><div class="card-head"><h2>Response Summary</h2></div>
+          <div class="progress-row"><span>Rescue dispatched</span><b>78%</b></div><div class="progress"><i style="width:78%"></i></div>
+          <div class="progress-row"><span>Reports verified</span><b>64%</b></div><div class="progress"><i style="width:64%"></i></div>
+          <div class="progress-row"><span>Relief delivered</span><b>51%</b></div><div class="progress"><i style="width:51%"></i></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="monitor" class="section">
+      <div class="page-title"><span class="eyebrow">REAL-TIME MONITORING</span><h1>Live situation map</h1></div>
+      <div id="authorityMap" class="map large-map"></div>
+    </section>
+
+    <section id="incidents" class="section">
+      <div class="page-title"><span class="eyebrow">INCIDENT MANAGEMENT</span><h1>All incidents</h1></div>
+      <div class="filter-row">
+        <select id="filterPriority">
+          <option value="all">All priorities</option>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <button id="seedDemo" class="small-btn">+ Add demo incident</button>
+      </div>
+      <div id="incidentTable" class="table-wrap"></div>
+    </section>
+
+    <section id="teams" class="section">
+      <div class="page-title"><span class="eyebrow">FIELD OPERATIONS</span><h1>Rescue teams</h1></div>
+      <div id="teamGrid" class="team-grid"></div>
+    </section>
+
+    <section id="resources" class="section">
+      <div class="page-title"><span class="eyebrow">LOGISTICS</span><h1>Relief resources</h1></div>
+      <div class="resource-grid">
+        <div class="resource card"><span>💧</span><h3>Drinking Water</h3><b>8,420 L</b><div class="progress"><i style="width:72%"></i></div><small>72% available</small></div>
+        <div class="resource card"><span>🍱</span><h3>Food Packets</h3><b>4,820</b><div class="progress"><i style="width:58%"></i></div><small>58% available</small></div>
+        <div class="resource card"><span>💊</span><h3>Medical Kits</h3><b>920</b><div class="progress"><i style="width:38%"></i></div><small>38% available</small></div>
+        <div class="resource card"><span>🛏️</span><h3>Blankets</h3><b>2,300</b><div class="progress"><i style="width:81%"></i></div><small>81% available</small></div>
+      </div>
+    </section>
+
+    <section id="shelterAdmin" class="section">
+      <div class="page-title"><span class="eyebrow">SHELTER MANAGEMENT</span><h1>Shelter capacity</h1></div>
+      <div id="adminShelters" class="shelter-grid"></div>
+    </section>
+
+    <section id="recovery" class="section">
+      <div class="page-title"><span class="eyebrow">RECOVERY & REHABILITATION</span><h1>Recovery tracking</h1></div>
+      <div class="card recovery-card">
+        <div class="recovery-item"><span>🏫 Schools inspected</span><b>14 / 20</b><div class="progress"><i style="width:70%"></i></div></div>
+        <div class="recovery-item"><span>🛣️ Roads cleared</span><b>31 / 45</b><div class="progress"><i style="width:69%"></i></div></div>
+        <div class="recovery-item"><span>🏠 Homes assessed</span><b>118 / 180</b><div class="progress"><i style="width:65%"></i></div></div>
+        <div class="recovery-item"><span>💡 Power restored</span><b>82 / 100</b><div class="progress"><i style="width:82%"></i></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast"></div>
+
+<!-- Libraries -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Scripts -->
+<script src="js/storage.js"></script>
+<script src="js/map.js"></script>
+<script src="js/authority.js"></script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Citizen Portal | SafeReach</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  </head>
+  <body>
+    <header class="topbar citizen-bar">
+      <a class="logo" href="index.html">⚡ SafeReach <small>Citizen Portal</small></a>
+      <div class="top-actions">
+        <span id="citizenLocation" class="location-pill"
+          >📍 Location not detected</span
+        >
+        <a href="authority.html" class="switch-link">Authority →</a>
+      </div>
+    </header>
+
+    <div class="app-layout">
+      <aside class="sidebar">
+        <button class="nav-item active" data-section="home">
+          🏠 <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-section="sos">
+          🆘 <span>Emergency SOS</span>
+        </button>
+        <button class="nav-item" data-section="report">
+          📝 <span>Report Incident</span>
+        </button>
+        <button class="nav-item" data-section="map">
+          🗺️ <span>Live Map</span>
+        </button>
+        <button class="nav-item" data-section="shelters">
+          🏠 <span>Safe Shelters</span>
+        </button>
+        <button class="nav-item" data-section="alerts">
+          🔔 <span>Alerts</span>
+        </button>
+        <button class="nav-item" data-section="requests">
+          📋 <span>My Requests</span>
+        </button>
+      </aside>
+
+      <main class="content">
+        <section id="home" class="section active">
+          <div class="hero citizen-hero">
+            <div>
+              <span class="eyebrow">CITIZEN SAFETY CENTER</span>
+              <h1>Stay safe. Get help faster.</h1>
+              <p>
+                Report an emergency and let SafeReach help authorities
+                prioritize the response.
+              </p>
+            </div>
+            <button class="sos-big" id="heroSos">🆘 SEND SOS</button>
+          </div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span>🆘</span><b id="statRequests">0</b
+              ><small>My Requests</small>
+            </div>
+            <div class="stat-card">
+              <span>🔔</span><b>3</b><small>Active Alerts</small>
+            </div>
+            <div class="stat-card">
+              <span>🏠</span><b>4</b><small>Nearby Shelters</small>
+            </div>
+            <div class="stat-card">
+              <span>📍</span><b id="statLocation">—</b><small>GPS Status</small>
+            </div>
+          </div>
+          <div class="two-col">
+            <div class="card">
+              <div class="card-head"><h2>Quick Actions</h2></div>
+              <div class="quick-grid">
+                <button data-section="sos">🆘<span>Send SOS</span></button>
+                <button data-section="report">
+                  📝<span>Report Incident</span>
+                </button>
+                <button data-section="shelters">
+                  🏠<span>Find Shelter</span>
+                </button>
+                <button data-section="map">🗺️<span>Open Map</span></button>
+              </div>
+            </div>
+            <div class="card alert-card">
+              <div class="card-head">
+                <h2>⚠️ Latest Alert</h2>
+                <span class="badge danger">HIGH</span>
+              </div>
+              <h3>Heavy rainfall & local flooding</h3>
+              <p>
+                Residents in low-lying areas should move to safer locations and
+                follow official instructions.
+              </p>
+              <button class="text-btn" data-section="alerts">
+                View all alerts →
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section id="sos" class="section">
+          <div class="page-title">
+            <span class="eyebrow">EMERGENCY</span>
+            <h1>Request immediate help</h1>
+            <p>Use SOS only for a genuine emergency.</p>
+          </div>
+          <div class="sos-panel card">
+            <div class="sos-ring">🆘</div>
+            <h2>Emergency SOS</h2>
+            <p>
+              We'll capture your location and send your request directly to the central command dashboard.
+            </p>
+            <button id="sendSos" class="danger-btn">SEND SOS NOW</button>
+            <div class="location-box">
+              📍 <span id="sosLocation">Detecting your location...</span>
+            </div>
+          </div>
+        </section>
+
+        <section id="report" class="section">
+          <div class="page-title">
+            <span class="eyebrow">INCIDENT REPORTING</span>
+            <h1>Report an incident</h1>
+            <p>
+              Photos and accurate location help responders understand the
+              situation.
+            </p>
+          </div>
+          <form id="incidentForm" class="card form-card">
+            <div class="form-grid">
+              <label>Incident type
+                <select id="incidentType" required>
+                  <option value="">Select type</option>
+                  <option value="SOS">SOS (Critical Emergency)</option>
+                  <option value="Rescue">Rescue</option>
+                  <option value="Medical">Medical</option>
+                  <option value="Food/Water/Medicine">Food / Water / Medicine</option>
+                  <option value="General Assistance">General Assistance</option>
+                </select>
+              </label>
+              <label
+                >People affected<input
+                  id="peopleAffected"
+                  type="number"
+                  min="1"
+                  value="1"
+                  required
+              /></label>
+              <label class="full"
+                >Description<textarea
+                  id="description"
+                  rows="5"
+                  placeholder="Describe what is happening..."
+                  required
+                ></textarea>
+              </label>
+              <label
+                >Severity<select id="severity">
+                  <option value="Low">Low</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select></label
+              >
+              <label
+                >Photo<input id="incidentPhoto" type="file" accept="image/*"
+              /></label>
+            </div>
+            <div class="location-box">
+              📍 <span id="reportLocation">Location will be detected</span
+              ><button type="button" class="small-btn" id="refreshLocation">
+                Use my location
+              </button>
+            </div>
+            <button class="primary-btn" type="submit">
+              Submit Incident Report
+            </button>
+          </form>
+        </section>
+
+        <section id="map" class="section">
+          <div class="page-title">
+            <span class="eyebrow">SITUATION AWARENESS</span>
+            <h1>Live disaster map</h1>
+            <p>View incidents, shelters and your current position.</p>
+          </div>
+          <div class="map-toolbar">
+            <span>🔴 Critical/High</span><span>🟡 Medium</span
+            ><span>🟢 Shelter</span
+            ><button id="locateMe" class="small-btn">📍 Locate me</button>
+          </div>
+          <div id="citizenMap" class="map"></div>
+        </section>
+
+        <section id="shelters" class="section">
+          <div class="page-title">
+            <span class="eyebrow">EVACUATION</span>
+            <h1>Nearby safe shelters</h1>
+            <p>Check capacity and available facilities before moving.</p>
+          </div>
+          <div id="shelterList" class="shelter-grid"></div>
+        </section>
+
+        <section id="alerts" class="section">
+          <div class="page-title">
+            <span class="eyebrow">PUBLIC SAFETY</span>
+            <h1>Disaster alerts</h1>
+          </div>
+          <div class="alert-list">
+            <article class="card alert-row">
+              <span class="alert-icon">🌧️</span>
+              <div>
+                <span class="badge danger">HIGH</span>
+                <h3>Heavy rainfall & flooding</h3>
+                <p>
+                  Low-lying areas may experience water accumulation. Follow
+                  local evacuation instructions.
+                </p>
+                <small>Updated 15 min ago</small>
+              </div>
+            </article>
+            <article class="card alert-row">
+              <span class="alert-icon">🌊</span>
+              <div>
+                <span class="badge warning">MEDIUM</span>
+                <h3>Water level rising</h3>
+                <p>
+                  Residents near rivers and drainage channels should remain
+                  alert.
+                </p>
+                <small>Updated 32 min ago</small>
+              </div>
+            </article>
+            <article class="card alert-row">
+              <span class="alert-icon">📢</span>
+              <div>
+                <span class="badge info">INFO</span>
+                <h3>Emergency shelters open</h3>
+                <p>
+                  Temporary shelters are available at designated community
+                  centers.
+                </p>
+                <small>Updated 1 hr ago</small>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="requests" class="section">
+          <div class="page-title">
+            <span class="eyebrow">MY ACTIVITY</span>
+            <h1>Track my requests</h1>
+          </div>
+          <div id="requestList" class="request-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <!-- Core Libraries -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+    <!-- App Logic Scripts -->
+    <script src="js/storage.js"></script>
+    <script src="js/location.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/citizen.js"></script>
+  </body>
+</html>
