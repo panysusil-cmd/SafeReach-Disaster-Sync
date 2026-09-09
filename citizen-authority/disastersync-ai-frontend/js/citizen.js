@@ -4,9 +4,7 @@
 // =====================================================
 
 // 1. SUPABASE CONNECTION (Shared Team Database)
-const SUPABASE_URL = "https://pihjynkvwwrgvbxkyosj.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpaGp5bmt2d3dyZ3ZieGt5b3NqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg0MDU0MTIsImV4cCI6MjEwMzk4MTQxMn0.hYtT1t8kb7gsKqWqIb1VMm6WlTwwHwtPOoqDyv7HFtM"
-const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
 
 // 2. TOAST NOTIFICATIONS
 const toastEl = document.getElementById("toast");
@@ -50,15 +48,18 @@ window.addEventListener("online", syncOfflineQueue);
 // 4. CORE INCIDENT POSTING (SUPABASE + OFFLINE BACKUP)
 async function sendToDatabase(incidentData) {
   const payload = {
-    request_type: incidentData.request_type || convertRequestType(incidentData.type),
-    people_affected: Number(incidentData.people || 1),
-    description: incidentData.description || "Emergency assistance requested",
-    severity: (incidentData.severity || "high").toLowerCase(),
-    latitude: Number(incidentData.lat) || 20.2961,
-    longitude: Number(incidentData.lng) || 85.8245,
-    status: "pending",
-    created_at: new Date().toISOString()
-  };
+      title: incidentData.title || (incidentData.request_type === 'SOS' || incidentData.type === 'SOS' ? 'Emergency SOS' : 'Citizen Incident Report'),
+      request_type: incidentData.request_type || convertRequestType(incidentData.type),
+      people_affected: Number(incidentData.people || incidentData.people_affected || 1),
+      description: incidentData.description || "Emergency assistance requested",
+      severity: (incidentData.severity || "high").toLowerCase(),
+      severity_score: incidentData.severity_score || (incidentData.type === 'SOS' ? 95 : 75),
+      priority_score: incidentData.priority_score || (incidentData.type === 'SOS' ? 95 : 80),
+      latitude: Number(incidentData.lat ?? incidentData.latitude) || 20.2961,
+      longitude: Number(incidentData.lng ?? incidentData.longitude) || 85.8245,
+      status: "submitted",
+      created_at: new Date().toISOString()
+    };
 
   if (!navigator.onLine || !supabaseClient) {
     queueOffline(payload);

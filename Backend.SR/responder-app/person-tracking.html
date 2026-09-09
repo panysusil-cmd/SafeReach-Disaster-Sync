@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SafeReach — Person & Casualty Tracking</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 24px; background: #f8fafc; color: #1e293b; }
+    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .badge-label { color: #0284c7; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    h2 { margin: 4px 0 0; font-size: 22px; }
+    .btn-primary { background: #0284c7; color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 14px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 24px; }
+    .stat-card { background: white; padding: 14px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .stat-card small { color: #64748b; font-weight: 700; font-size: 11px; }
+    .stat-card div { font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .border-missing { border-left: 4px solid #ef4444; color: #ef4444; }
+    .border-rescued { border-left: 4px solid #10b981; color: #10b981; }
+    .border-injured { border-left: 4px solid #f59e0b; color: #f59e0b; }
+    .border-displaced { border-left: 4px solid #3b82f6; color: #3b82f6; }
+    .border-deceased { border-left: 4px solid #64748b; color: #475569; }
+    .card-table { background: white; border-radius: 8px; border: 1px solid #e2e8f0; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+    th { background: #f1f5f9; padding: 12px 16px; color: #475569; font-weight: 600; font-size: 12px; text-transform: uppercase; }
+    td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; }
+    .status-tag { padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: #e2e8f0; }
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+    .modal-box { background: white; border-radius: 8px; width: 440px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+    .input-control { padding: 9px; border: 1px solid #cbd5e1; border-radius: 5px; font-size: 14px; width: 100%; box-sizing: border-box; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>
+      <span class="badge-label">SafeReach Command Operations</span>
+      <h2>Person & Casualty Tracking</h2>
+    </div>
+    <button class="btn-primary" onclick="openModal()">+ Register Person / Family</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card border-missing"><small>MISSING</small><div id="count-missing">0</div></div>
+    <div class="stat-card border-rescued"><small>RESCUED</small><div id="count-rescued">0</div></div>
+    <div class="stat-card border-injured"><small>INJURED</small><div id="count-injured">0</div></div>
+    <div class="stat-card border-displaced"><small>DISPLACED</small><div id="count-displaced">0</div></div>
+    <div class="stat-card border-deceased"><small>DECEASED</small><div id="count-deceased">0</div></div>
+  </div>
+
+  <div class="card-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Name / Details</th>
+          <th>Family Linkage</th>
+          <th>Status</th>
+          <th>Assigned Destination / Hospital</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <tr><td colspan="5" style="text-align:center; padding: 20px;">Loading records...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Register Modal -->
+  <div id="modal" class="modal">
+    <div class="modal-box">
+      <h3 style="margin: 0;">Register Affected Individual</h3>
+      <input type="text" id="p-name" class="input-control" placeholder="Full Name (leave blank if unidentified)">
+      <div style="display: flex; gap: 10px;">
+        <input type="number" id="p-age" class="input-control" placeholder="Age">
+        <select id="p-gender" class="input-control">
+          <option value="Unknown">Gender: Unknown</option>
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <select id="p-status" class="input-control">
+        <option value="MISSING">Status: Missing</option>
+        <option value="RESCUED">Status: Rescued</option>
+        <option value="INJURED">Status: Injured</option>
+        <option value="DISPLACED">Status: Displaced</option>
+        <option value="DECEASED_IDENTIFIED">Status: Deceased</option>
+      </select>
+      <select id="p-family" class="input-control">
+        <option value="">No Family Link (Head / Individual)</option>
+      </select>
+      <input type="text" id="p-facility" class="input-control" placeholder="Hospital or Shelter Name">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+        <button onclick="closeModal()" style="padding: 8px 14px; border: 1px solid #cbd5e1; background: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+        <button onclick="savePerson()" class="btn-primary">Save Record</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = "https://pihjynkvwwrgvbxkyosj.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_RVBqDu7nugLW7snDQkbJYA_6GPGc8df";
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let list = [];
+
+    async function load() {
+      const { data } = await sb.from('persons').select('*, family_head:family_head_id(full_name)').order('created_at', { ascending: false });
+      list = data || [];
+      render();
+    }
+
+    function render() {
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+      const counts = { MISSING: 0, RESCUED: 0, INJURED: 0, DISPLACED: 0, DECEASED_IDENTIFIED: 0, DECEASED_UNIDENTIFIED: 0 };
+
+      list.forEach(p => {
+        if (counts[p.status] !== undefined) counts[p.status]++;
+        const loc = p.status === 'INJURED' ? `🏥 ${p.hospital_destination || 'Hospital'}` : (p.shelter_id ? `⛺ ${p.shelter_id}` : '—');
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${p.full_name || 'Unidentified'}</strong><br><small style="color:#64748b">${p.age || '?'} yr • ${p.gender}</small></td>
+            <td>${p.family_head?.full_name ? 'Linked: ' + p.family_head.full_name : '<span style="color:#94a3b8">Self / Head</span>'}</td>
+            <td><span class="status-tag">${p.status}</span></td>
+            <td>${loc}</td>
+            <td>
+              <select onchange="updateStatus('${p.id}', this.value)" style="font-size:12px; padding:4px;">
+                <option value="">Update...</option>
+                <option value="RESCUED">Rescued</option>
+                <option value="INJURED">Injured</option>
+                <option value="DISPLACED">Displaced</option>
+                <option value="DECEASED_IDENTIFIED">Deceased</option>
+              </select>
+            </td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('count-missing').innerText = counts.MISSING;
+      document.getElementById('count-rescued').innerText = counts.RESCUED;
+      document.getElementById('count-injured').innerText = counts.INJURED;
+      document.getElementById('count-displaced').innerText = counts.DISPLACED;
+      document.getElementById('count-deceased').innerText = counts.DECEASED_IDENTIFIED + counts.DECEASED_UNIDENTIFIED;
+
+      const fSelect = document.getElementById('p-family');
+      fSelect.innerHTML = '<option value="">No Family Link (Head / Individual)</option>';
+      list.filter(p => !p.family_head_id && p.full_name).forEach(h => {
+        fSelect.innerHTML += `<option value="${h.id}">Family of ${h.full_name}</option>`;
+      });
+    }
+
+    async function updateStatus(id, newStatus) {
+      if (!newStatus) return;
+      let payload = { status: newStatus };
+      if (newStatus === 'INJURED') {
+        const h = prompt('Receiving Hospital:');
+        if (h) payload.hospital_destination = h;
+      }
+      await sb.from('persons').update(payload).eq('id', id);
+      load();
+    }
+
+    async function savePerson() {
+      await sb.from('persons').insert([{
+        full_name: document.getElementById('p-name').value.trim() || null,
+        age: parseInt(document.getElementById('p-age').value) || null,
+        gender: document.getElementById('p-gender').value,
+        status: document.getElementById('p-status').value,
+        family_head_id: document.getElementById('p-family').value || null,
+        hospital_destination: document.getElementById('p-facility').value.trim() || null
+      }]);
+      closeModal();
+      load();
+    }
+
+    function openModal() { document.getElementById('modal').style.display = 'flex'; }
+    function closeModal() { document.getElementById('modal').style.display = 'none'; }
+
+    load();
+  </script>
+</body>
+</html>

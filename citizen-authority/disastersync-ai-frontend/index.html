@@ -7,12 +7,12 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="landing">
-  <main class="landing-wrap" style="max-width: 1050px;">
+  <main class="landing-wrap" style="max-width: 1150px;">
     <div class="brand-mark">⚡</div>
     <h1>Safe<span>Reach</span></h1>
     <p>AI-Powered Integrated Disaster Management & Emergency Response Platform</p>
     
-    <div class="portal-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+    <div class="portal-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
       <!-- 1. Citizen Portal -->
       <a class="portal-card citizen" href="citizen.html">
         <div class="portal-icon">👤</div>
@@ -21,20 +21,28 @@
         <span>Enter Citizen Portal →</span>
       </a>
 
-      <!-- 2. Authority Command Center -->
-      <a class="portal-card authority" href="authority.html">
+      <!-- 2. Authority Command Center (React Command Map on Port 5173) -->
+      <a class="portal-card authority" href="http://localhost:5173" target="_blank">
         <div class="portal-icon">🛡️</div>
         <h2>Authority Center</h2>
         <p>Monitor real-time GIS incident pins, AI priority scores, and dispatch field teams.</p>
         <span>Enter Authority Center →</span>
       </a>
 
-      <!-- 3. Responder & Logistics Portal -->
+      <!-- 3. Responder & Logistics Portal (React App on Port 5174) -->
       <a class="portal-card" href="http://localhost:5174" target="_blank" style="border-top: 5px solid #d92d3b;">
         <div class="portal-icon">🚑</div>
         <h2>Responder & Logistics</h2>
         <p>Execute live field missions, update rescue statuses, and manage relief supplies & shelter WASH.</p>
         <span>Enter Responder View →</span>
+      </a>
+
+      <!-- 4. Person & Casualty Tracking (Module 8) -->
+<a class="portal-card" href="person-tracking.html" target="_blank" style="border-top: 5px solid #0284c7;">
+        <div class="portal-icon">📋</div>
+        <h2>Person Tracking</h2>
+        <p>Track missing, rescued, injured, and displaced persons with hospital linkage.</p>
+        <span>Open Tracking Board →</span>
       </a>
     </div>
 
